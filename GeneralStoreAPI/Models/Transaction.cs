@@ -21,11 +21,11 @@ namespace GeneralStoreAPI.Models
         public virtual Product Product { get; set; }
 
         public int ItemCount { get; set; }
-        public DateTime DateOfTransaction
+        public string DateOfTransaction
         {
             get
             {
-                return DateTime.Now;
+                return DateTime.Now.ToString("d");
             }
         }
     }

@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 
+
 namespace GeneralStoreAPI.Controllers
 {
     public class ProductController : ApiController
@@ -49,6 +50,23 @@ namespace GeneralStoreAPI.Controllers
                 return BadRequest("Product was not found");
             }
             return Ok(product);
+        }
+
+        [HttpGet]
+        [ActionName("GetOutOfStock")]
+        public async Task<IHttpActionResult> GetAllOutOfStockProducts()
+        {
+            List<Product> productsNotInStock = new List<Product>();
+            List<Product> products = await _context.Products.ToListAsync();
+            foreach (Product product in products)
+            {
+                if (!product.IsInStock)
+                {
+                    productsNotInStock.Add(product);
+                }
+     
+            }
+            return Ok(productsNotInStock);
         }
     }
 }

@@ -24,12 +24,20 @@ namespace GeneralStoreAPI.Controllers
             }
             if (product.IsInStock)
             {
-                _context.Transactions.Add(transaction);
-                product.NumberInInventory--;
-                if (await _context.SaveChangesAsync() > 0)
+                if (transaction.ItemCount > product.NumberInInventory)
                 {
-                    return Ok("Transaction recorded");
-                }                 
+                    return BadRequest("Not enough in stock");
+                }
+                else
+                {
+                    _context.Transactions.Add(transaction);
+                    product.NumberInInventory = product.NumberInInventory - transaction.ItemCount;
+                    if (await _context.SaveChangesAsync() > 0)
+                    {
+                        return Ok("Transaction recorded");
+                    }
+                }
+                               
             }
             else
             {
@@ -55,6 +63,24 @@ namespace GeneralStoreAPI.Controllers
                 return BadRequest("Unable to Locate Transaction");
             }
             return Ok(transaction);
+        }
+
+        [HttpGet]
+        public async Task<IHttpActionResult> GetTotalSaleBySKU([FromUri] string SKU)
+        {
+            Product product = await _context.Products.FindAsync(SKU);
+            List<Transaction> transactions = await _context.Transactions.ToListAsync();
+            double numberOfSales = 0.0;
+            foreach (Transaction transaction in transactions)
+            {
+                if (transaction.Product == product)
+                {
+                    numberOfSales += transaction.ItemCount;
+                }
+            }
+            double totalCost = product.Cost* numberOfSales;
+            return Ok($"The Total Sales For {product.Name} is {totalCost}");
+
         }
     }
 }
